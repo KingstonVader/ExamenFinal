@@ -1,286 +1,303 @@
     package com.example.examenfinal;
 
-    import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
-
-    import androidx.appcompat.app.AppCompatActivity;
-    import androidx.core.app.ActivityCompat;
-    import androidx.core.content.ContextCompat;
-    import android.content.Intent;
-    import android.content.pm.PackageManager;
-    import android.location.Location;
+    import android.graphics.Color;
     import android.os.Bundle;
-    import android.util.Log;
+    import android.os.SystemClock;
     import android.view.View;
     import android.widget.Button;
+    import android.widget.Chronometer;
     import android.widget.EditText;
-    import android.widget.Toast;
-    import android.os.CountDownTimer;
     import android.widget.TextView;
-    import com.google.android.gms.location.FusedLocationProviderClient;
+    import android.widget.Toast;
+
+    import androidx.annotation.NonNull;
+    import androidx.core.app.ActivityCompat;
+    import androidx.fragment.app.FragmentActivity;
+
+    import com.google.android.gms.maps.CameraUpdateFactory;
+    import com.google.android.gms.maps.GoogleMap;
+    import com.google.android.gms.maps.OnMapReadyCallback;
+    import com.google.android.gms.maps.SupportMapFragment;
     import com.google.android.gms.maps.model.LatLng;
-    import com.google.android.gms.tasks.OnSuccessListener;
-    import com.google.firebase.auth.FirebaseAuth;
+    import com.google.android.gms.maps.model.MarkerOptions;
+    import com.google.android.gms.maps.model.Polyline;
+    import com.google.android.gms.maps.model.PolylineOptions;
     import com.google.firebase.database.DatabaseReference;
     import com.google.firebase.database.FirebaseDatabase;
-    import com.google.maps.DirectionsApi;
-    import com.google.maps.GeoApiContext;
-    import com.google.maps.PendingResult;
-    import com.google.maps.model.DirectionsResult;
-    import com.google.maps.model.TravelMode;
+    import com.google.firebase.database.DataSnapshot;
+    import com.google.firebase.database.DatabaseError;
+    import com.google.firebase.database.ValueEventListener;
+
+    import android.Manifest;
+    import android.location.Location;
+    import android.location.LocationListener;
+    import android.location.LocationManager;
+    import android.content.pm.PackageManager;
+
     import java.text.SimpleDateFormat;
+    import java.util.ArrayList;
     import java.util.Date;
-    import java.util.Locale;
-    import com.google.android.gms.tasks.OnCompleteListener;
-    import com.google.android.gms.tasks.Task;
+    import java.util.HashMap;
+    import java.util.List;
+    import java.util.Map;
 
+    public class RegistroFecha extends FragmentActivity implements OnMapReadyCallback {
+        private GoogleMap googleMap;
+        private EditText editTextNombreRuta;
+        private TextView textViewFecha, textViewDuracion, textViewPosicionInicial, textViewPosicionFinal;
+        private Button btnInicioRuta, btnFinRuta;
+        private TextView textViewDistancia;
+        private double distanciaTotal = 0;
+        private Chronometer chronometer;
+        private DatabaseReference databaseReference;
+        private LocationManager locationManager;
+        private LocationListener locationListener;
+        private String currentRutaKey;
 
-
-
-    public class RegistroFecha extends AppCompatActivity {
-
-        private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-        private FusedLocationProviderClient fusedLocationClient;
-        private String coordenadasIniciales = "";
-        Button buttonBackT, buttonOn, buttonOff,buttonInicio,buttonFin;
-        private RegistroFechaCronometro registroFechaCronometro;
-        TextView textViewCronometro;
-        private long tiempoRestante = 0;
-        private boolean cronometroCorriendo = false;
-        private CountDownTimer countDownTimer;
-        private GeoApiContext context;
-
+        private boolean rutaIniciada = false;
+        private LatLng inicioRutaLatLng;
+        private List<LatLng> rutaPoints;
+        private Polyline rutaPolyline;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_registro_fecha);
 
-            buttonBackT = findViewById(R.id.buttonBackT);
-            buttonOn = findViewById(R.id.buttonInicio);
-            buttonOff = findViewById(R.id.buttonFin);
-            buttonInicio = findViewById(R.id.buttonInicio);
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager( )
+                    .findFragmentById(R.id.mapRegistro);
+            mapFragment.getMapAsync(this);
 
-            buttonFin = findViewById(R.id.buttonFin);
+            editTextNombreRuta = findViewById(R.id.editTextNombreRuta);
+            textViewFecha = findViewById(R.id.textViewFecha);
+            textViewDuracion = findViewById(R.id.textViewDuracion);
+            textViewDistancia = findViewById(R.id.textViewDistancia);
+            textViewPosicionInicial = findViewById(R.id.textViewPosicionInicial);
+            textViewPosicionFinal = findViewById(R.id.textViewPosicionFinal);
 
-            context = new GeoApiContext.Builder( )
-                    .apiKey("AIzaSyDvquKfTHuZRehE9amaNT8q5E6TjbADCTE")
-                    .build( );
+            btnInicioRuta = findViewById(R.id.btnInicioRuta);
+            btnFinRuta = findViewById(R.id.btnFinRuta);
 
+            chronometer = findViewById(R.id.chronometer);
 
+            databaseReference = FirebaseDatabase.getInstance( ).getReference("historial_rutas");
 
-            buttonFin.setOnClickListener(new View.OnClickListener() {
+            locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            locationListener = new LocationListener( ) {
                 @Override
-                public void onClick(View view) {
-                    detenerCronometro();
-                }
-
-                private void detenerCronometro() {
-
-                }
-            });
-
-            fusedLocationClient = getFusedLocationProviderClient(this);
-            registroFechaCronometro = new RegistroFechaCronometro(new RegistroFechaCronometro.OnCronometroTickListener() {
-
-                @Override
-                public void onTick(String tiempoRestante) {
-                    actualizarTextoCronometro(tiempoRestante);
-                }
-
-                @Override
-                public void onFinish() {
-
-                }
-
-                private void actualizarTextoCronometro(String tiempoRestante) {
-
-                }
-
-                private void iniciarCronometro() {
-                    if (!cronometroCorriendo) {
-                        countDownTimer = new CountDownTimer(tiempoRestante, 1000) {
-                            @Override
-                            public void onTick(long millisUntilFinished) {
-                                tiempoRestante = millisUntilFinished;
-                                actualizarTextoCronometro();
-                            }
-
-                            @Override
-                            public void onFinish() {
-                                detenerCronometro();
-                            }
-                        }.start();
-
-                        cronometroCorriendo = true;
-                        buttonInicio.setEnabled(false); // Deshabilitar el botón de inicio mientras el cronómetro está en marcha
+                public void onLocationChanged(Location location) {
+                    if (rutaIniciada) {
+                        // Actualizar la posición del usuario
+                        actualizarRuta(location);
                     }
                 }
 
-                private void detenerCronometro() {
-                    if (countDownTimer != null) {
-                        countDownTimer.cancel();
-                    }
-
-                    cronometroCorriendo = false;
-                    tiempoRestante = 0;
-                    actualizarTextoCronometro();
-                    buttonInicio.setEnabled(true); // Habilitar el botón de inicio después de detener el cronómetro
-                }
-
-                private void actualizarTextoCronometro() {
-                    int minutos = (int) (tiempoRestante / 1000) / 60;
-                    int segundos = (int) (tiempoRestante / 1000) % 60;
-
-                    String tiempoFormato = String.format("%02d:%02d", minutos, segundos);
-                    textViewCronometro.setText(tiempoFormato);
-
-                }
-            });
-
-            buttonBackT.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(RegistroFecha.this, Home.class);
-                    startActivity(intent);
+                public void onStatusChanged(String provider, int status, Bundle extras) {
                 }
-            });
 
-
-            buttonOn.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v) {
-                    obtenerUbicacionActual();
+                public void onProviderEnabled(String provider) {
                 }
-            });
 
-            buttonOff.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v) {
-                    mostrarUltimasCoordenadasEnEditText();
-                    guardarDatosEnFirebase();
+                public void onProviderDisabled(String provider) {
                 }
-            });
+            };
 
-        }
-        private void calcularDistanciaDuracion(String inicio, String fin) {
-            DirectionsApi.newRequest(context)
-                    .mode(TravelMode.DRIVING)
-                    .origin(String.valueOf(new LatLng(Double.parseDouble(inicio.split(",")[0]), Double.parseDouble(inicio.split(",")[1]))))
-                    .destination(String.valueOf(new LatLng(Double.parseDouble(fin.split(",")[0]), Double.parseDouble(fin.split(",")[1]))))
-                    .setCallback(new PendingResult.Callback<DirectionsResult>() {
-                        @Override
-                        public void onResult(DirectionsResult result) {
-                            try {
-                                if (result != null && result.routes != null && result.routes.length > 0) {
-                                    if (result.routes[0].legs != null && result.routes[0].legs.length > 0) {
-                                        // Obtener la distancia y la duración desde el resultado de la ruta
-                                        String distancia = result.routes[0].legs[0].distance != null ? result.routes[0].legs[0].distance.humanReadable : "N/A";
-                                        String duracion = result.routes[0].legs[0].duration != null ? result.routes[0].legs[0].duration.humanReadable : "N/A";
-
-                                        // Actualizar la interfaz de usuario en el hilo principal
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                actualizarInterfazUsuario(distancia, duracion);
-                                            }
-                                        });
-
-                                        // Ahora puedes llamar a guardarDatosEnFirebase() ya que tienes las coordenadas finales y otra información relevante.
-                                        guardarDatosEnFirebase(distancia, duracion);
-                                    } else {
-                                        Log.e("Error", "No hay información de piernas en la ruta");
-                                    }
-                                } else {
-                                    Log.e("Error", "No hay rutas disponibles");
-                                }
-                            } catch (Exception e) {
-                                Log.e("Error", "Error al calcular la ruta: " + e.getMessage());
-                            }
-                        }
-
-                        private void guardarDatosEnFirebase(String distancia, String duracion) {
-                        }
-
-                        @Override
-                        public void onFailure(Throwable e) {
-                            Log.e("Error", "Error al calcular la ruta: " + e.getMessage());
-                        }
-                    });
-        }
-
-        private void actualizarInterfazUsuario(String distancia, String duracion) {
-            // Actualizar tus EditText con la distancia y la duración
-        }
-
-
-        private void mostrarUltimasCoordenadasEnEditText() {
-            String ultimasCoordenadas = obtenerUltimasCoordenadas();
-            Log.d("TAG", "Ultimas coordenadas: " + ultimasCoordenadas);
-            EditText editFinRuta = findViewById(R.id.editFinRuta);
-            editFinRuta.setText(ultimasCoordenadas);
-        }
-
-        private void obtenerUbicacionActual() {
-            Log.d("TAG", "obtenerUbicacionActual() llamado");
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        LOCATION_PERMISSION_REQUEST_CODE);
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
             } else {
-                fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+            }
+
+            btnInicioRuta.setOnClickListener(new View.OnClickListener( ) {
+                @Override
+                public void onClick(View v) {
+                    iniciarRuta( );
+                }
+            });
+
+            btnFinRuta.setOnClickListener(new View.OnClickListener( ) {
+                @Override
+                public void onClick(View v) {
+                    finalizarRuta( );
+                }
+            });
+
+
+        }
+
+        private void iniciarRuta() {
+            final String nombreRuta = editTextNombreRuta.getText().toString().trim();
+            if (!rutaIniciada && !nombreRuta.isEmpty()) {
+                if (!isGPSEnabled()) {
+                    Toast.makeText(this, "Por favor, active el GPS para iniciar la ruta.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                databaseReference.orderByChild("nombreRuta").equalTo(nombreRuta).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onSuccess(Location location) {
-                        if (location != null) {
-                            // Obtener coordenadas iniciales
-                            coordenadasIniciales = location.getLatitude() + ", " + location.getLongitude();
-
-                            // Obtener la fecha actual
-                            String fechaActual = obtenerFechaActual();
-
-                            // Mostrar las coordenadas iniciales y la fecha en los EditText
-                            EditText editInicioRuta = findViewById(R.id.editInicioRuta);
-                            EditText editFechaRuta = findViewById(R.id.editFechaRuta);
-
-                            editInicioRuta.setText(coordenadasIniciales);
-                            editFechaRuta.setText(fechaActual);
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            Toast.makeText(RegistroFecha.this, "El nombre de ruta ya existe. Por favor, elija otro nombre.", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(RegistroFecha.this, "No se pudo obtener la ubicación actual", Toast.LENGTH_SHORT).show();
+                            chronometer.setBase(SystemClock.elapsedRealtime());
+                            chronometer.start();
+
+                            textViewFecha.setText(obtenerFechaActual());
+
+                            currentRutaKey = databaseReference.push().getKey();
+
+                            Map<String, Object> ruta = new HashMap<>();
+                            ruta.put("nombreRuta", nombreRuta);
+                            ruta.put("fecha", obtenerFechaActual());
+                            ruta.put("duracion", 0);
+
+                            Location location = obtenerPosicionActual();
+                            if (location != null) {
+                                double latitude = location.getLatitude();
+                                double longitude = location.getLongitude();
+                                inicioRutaLatLng = new LatLng(latitude, longitude);
+                                rutaPoints = new ArrayList<>();
+                                rutaPoints.add(inicioRutaLatLng);
+                                rutaPolyline = googleMap.addPolyline(new PolylineOptions().clickable(true).addAll(rutaPoints));
+                                rutaPolyline.setColor(Color.RED);
+
+                                ruta.put("posicionInicial", "Latitud: " + latitude + ", Longitud: " + longitude);
+                                textViewPosicionInicial.setText("Latitud: " + latitude + ", Longitud: " + longitude);
+                            } else {
+                                ruta.put("posicionInicial", "Posición inicial no disponible");
+                                textViewPosicionInicial.setText("Posición inicial no disponible");
+                            }
+
+                            ruta.put("posicionFinal", "");
+
+                            databaseReference.child(currentRutaKey).setValue(ruta);
+
+                            rutaIniciada = true;
+                            Toast.makeText(RegistroFecha.this, "Ruta iniciada", Toast.LENGTH_SHORT).show();
                         }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Toast.makeText(RegistroFecha.this, "Error en la base de datos", Toast.LENGTH_SHORT).show();
                     }
                 });
+            } else {
+                Toast.makeText(this, "Ingrese un nombre de ruta válido o la ruta ya ha sido iniciada", Toast.LENGTH_SHORT).show();
             }
         }
 
+        private void actualizarRuta(Location location) {
+            if (location != null) {
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                LatLng nuevaPosicion = new LatLng(latitude, longitude);
+                rutaPoints.add(nuevaPosicion);
+                rutaPolyline.setPoints(rutaPoints);
+
+                // Calcular la distancia entre los dos puntos y sumarla a la distancia total
+                if (rutaPoints.size() > 1) {
+                    LatLng puntoAnterior = rutaPoints.get(rutaPoints.size() - 2);
+                    double distancia = calcularDistancia(puntoAnterior, nuevaPosicion);
+                    distanciaTotal += distancia;
+                    textViewDistancia.setText(String.format("%.2f km", distanciaTotal / 1000)); // Muestra la distancia en kilómetros
+                }
+
+                // Centrar la cámara en la nueva posición
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(nuevaPosicion));
+            }
+        }
+
+        private void finalizarRuta() {
+            if (rutaIniciada) {
+                chronometer.stop();
+                long duracionEnSegundos = (SystemClock.elapsedRealtime() - chronometer.getBase()) / 1000;
+                textViewDuracion.setText(String.valueOf(duracionEnSegundos) + " segundos");
+
+                Location location = obtenerPosicionActual();
+                if (location != null) {
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+                    textViewPosicionFinal.setText("Latitud: " + latitude + ", Longitud: " + longitude);
+
+                    if (currentRutaKey != null) {
+                        DatabaseReference rutaRef = databaseReference.child(currentRutaKey);
+                        rutaRef.child("duracion").setValue(duracionEnSegundos);
+                        rutaRef.child("posicionFinal").setValue("Latitud: " + latitude + ", Longitud: " + longitude);
+
+                        LatLng finRutaLatLng = new LatLng(latitude, longitude);
+                        googleMap.addMarker(new MarkerOptions().position(finRutaLatLng).title("Fin de Ruta"));
+
+                        // Guardar la distancia total en metros directamente
+                        rutaRef.child("distanciaTotal").setValue(distanciaTotal);
+
+                        // Mostrar la distancia en kilómetros en el TextView
+                        textViewDistancia.setText(String.format("%.2f km", distanciaTotal / 1000));
+
+                        Toast.makeText(this, "Ruta finalizada", Toast.LENGTH_SHORT).show();
+                        rutaIniciada = false;
+                    } else {
+                        Toast.makeText(this, "Error al obtener la clave de la ruta", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    textViewPosicionFinal.setText("Posición final no disponible");
+                }
+            } else {
+                Toast.makeText(this, "La ruta no ha sido iniciada", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+
+
+        private Location obtenerPosicionActual() {
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            }
+            return null;
+        }
+
         private String obtenerFechaActual() {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy  -  HH:mm:ss");
             Date date = new Date();
             return dateFormat.format(date);
         }
 
-        private void guardarDatosEnFirebase() {
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference referencia = database.getReference("rutas");
-
-            String nombreRuta = ((EditText) findViewById(R.id.editNameRuta)).getText().toString();
-            String fechaRuta = ((EditText) findViewById(R.id.editFechaRuta)).getText().toString();
-            String coordenadasFinales = ((EditText) findViewById(R.id.editFinRuta)).getText().toString();
-
-            Ruta nuevaRuta = new Ruta(nombreRuta, fechaRuta, coordenadasIniciales, coordenadasFinales);
-
-            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            referencia.child(userId).push().setValue(nuevaRuta);
-            guardarUltimasCoordenadas(coordenadasIniciales);
-
-            Toast.makeText(RegistroFecha.this, "Se guardaron los datos", Toast.LENGTH_SHORT).show();
+        private boolean isGPSEnabled() {
+            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            return locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         }
 
-        private void guardarUltimasCoordenadas(String coordinates) {
-            getPreferences(MODE_PRIVATE).edit().putString("last_coordinates", coordinates).apply();
+        @Override
+        public void onMapReady(GoogleMap map) {
+            googleMap = map;
+
+            googleMap.getUiSettings().setZoomControlsEnabled(true);
+            googleMap.getUiSettings().setZoomGesturesEnabled(true);
+
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                googleMap.setMyLocationEnabled(true);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+            }
+
+            LatLng ovalle = new LatLng(-30.5987, -71.2007);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ovalle, 13));
         }
 
-        private String obtenerUltimasCoordenadas() {
-            return getPreferences(MODE_PRIVATE).getString("last_coordinates", "No hay coordenadas almacenadas");
-        }
+        private double calcularDistancia(LatLng punto1, LatLng punto2) {
+            Location location1 = new Location("Punto 1");
+            location1.setLatitude(punto1.latitude);
+            location1.setLongitude(punto1.longitude);
 
+            Location location2 = new Location("Punto 2");
+            location2.setLatitude(punto2.latitude);
+            location2.setLongitude(punto2.longitude);
+
+            return location1.distanceTo(location2);
+        }
     }

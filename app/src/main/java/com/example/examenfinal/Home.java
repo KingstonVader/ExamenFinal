@@ -29,6 +29,13 @@ public class Home extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        buttonRegistroHistorial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Home.this, RegistroHistorial.class);
+                startActivity(intent);
+            }
+        });
 
 
         buttonRegistroH.setOnClickListener(new View.OnClickListener() {

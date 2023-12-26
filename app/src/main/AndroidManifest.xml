@@ -17,7 +17,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ExamenFinal"
         tools:targetApi="31">
-
+        <activity
+            android:name=".RegistroHistorial"
+            android:exported="false" />
         <activity
             android:name=".RegistroFecha"
             android:exported="false" />
