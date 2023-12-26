@@ -16,26 +16,11 @@
         android:backgroundTint="#C4FF00"
         android:text="Registro"
         android:textColor="#000000"
-        app:layout_constraintBottom_toTopOf="@+id/buttonRegistroHistorial"
+        app:layout_constraintBottom_toTopOf="@+id/buttonHistorialHome"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
-    <Button
-            android:id="@+id/buttonRegistroHistorial"
-        android:layout_width="200dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginBottom="40dp"
-        android:backgroundTint="#C4FF00"
-        android:text="Registro Historial "
-        android:textColor="#000000"
-        app:layout_constraintBottom_toTopOf="@+id/buttonHistorialHome"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonRegistroHome" />
 
 
     <Button
@@ -51,7 +36,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonRegistroHistorial" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonRegistroHome" />
 
     <Button
         android:id="@+id/buttonMapaHome"

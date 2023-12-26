@@ -20,7 +20,6 @@ public class Home extends AppCompatActivity {
         buttonRegistroH = findViewById(R.id.buttonRegistroHome);
         buttonHistorialH = findViewById(R.id.buttonHistorialHome);
         buttonMapaH = findViewById(R.id.buttonMapaHome);
-        buttonRegistroHistorial= findViewById(R.id.buttonRegistroHistorial);
 
         buttonBackH.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -29,19 +28,11 @@ public class Home extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        buttonRegistroHistorial.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Home.this, RegistroHistorial.class);
-                startActivity(intent);
-            }
-        });
-
 
         buttonRegistroH.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Home.this, Register.class);
+                Intent intent = new Intent(Home.this, RegistroHistorial.class);
                 startActivity(intent);
             }
         });
