@@ -19,6 +19,19 @@
         app:layout_constraintStart_toStartOf="parent"
         android:textColorHint="#808080"
         android:textColor="@color/black"/>
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:autofillHints="emailAddress"
+        android:text="Historial"
+        android:textColor="@color/black"
+        android:textSize="28dp"
+        android:layout_centerHorizontal="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textViewFecha"
@@ -132,7 +145,7 @@
         android:layout_gravity="center"
         android:format="00:00:00"
         android:textColor="@color/black"
-        android:textSize="24sp"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
