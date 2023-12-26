@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context=".RegistroFecha">
+
+    <Button
+        android:id="@+id/buttonInicio"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginBottom="148dp"
+        android:backgroundTint="#C4FF00"
+        android:text="Inicio"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/buttonFin"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/buttonFin"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="143dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginBottom="152dp"
+        android:backgroundTint="#C4FF00"
+        android:text="Fin"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/buttonInicio" />
+
+    <Button
+        android:id="@+id/buttonBackT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:backgroundTint="#C4FF00"
+        android:text="Atras"
+        android:textColor="#000000"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/editNameRuta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="35dp"
+        android:layout_marginTop="90dp"
+        android:layout_marginEnd="180dp"
+        android:layout_marginBottom="20dp"
+        android:ems="10"
+        android:hint="Nombre ruta"
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/editFechaRuta"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/editFechaRuta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="180dp"
+        android:layout_marginBottom="20dp"
+        android:ems="10"
+        android:hint="Fecha ruta"
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/editInicioRuta"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editNameRuta" />}
+
+    <EditText
+        android:id="@+id/editInicioRuta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="180dp"
+        android:layout_marginBottom="20dp"
+        android:ems="10"
+        android:hint="Coordenadas iniciales"
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/editFinRuta"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editFechaRuta" />
+
+    <EditText
+        android:id="@+id/editFinRuta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="180dp"
+        android:layout_marginBottom="20dp"
+        android:ems="10"
+        android:hint="Coordenadas finales"
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/buttonInicio"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editInicioRuta" />
+</androidx.constraintlayout.widget.ConstraintLayout>
